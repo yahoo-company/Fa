@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>The Professor's Victoria</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+        }
+        body {
+            overflow: hidden;
+            background: #0a0015;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            touch-action: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* منوی اصلی - بهینه برای ایتا */
+        #mainMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 0, 15, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: opacity 0.8s ease;
+            padding: 20px;
+        }
+        #mainMenu.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .menu-container {
+            text-align: center;
+            padding: 30px 25px;
+            background: rgba(20, 5, 35, 0.85);
+            border-radius: 24px;
+            border: 2px solid rgba(255, 100, 200, 0.25);
+            box-shadow: 0 0 60px rgba(200, 50, 150, 0.1);
+            max-width: 420px;
+            width: 100%;
+        }
+        .menu-title {
+            font-size: clamp(26px, 7vw, 38px);
+            font-weight: 300;
+            color: #ffb3d9;
+            text-shadow: 0 0 30px rgba(255, 100, 200, 0.2);
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        .menu-title span {
+            color: #ff7eb3;
+            font-weight: 700;
+        }
+        .menu-subtitle {
+            color: rgba(255, 200, 220, 0.4);
+            font-size: clamp(10px, 2.5vw, 13px);
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 100, 200, 0.08);
+            padding-bottom: 12px;
+        }
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 13px 16px;
+            margin: 7px 0;
+            background: rgba(255, 100, 200, 0.06);
+            border: 1px solid rgba(255, 100, 200, 0.15);
+            border-radius: 50px;
+            color: #ffb3d9;
+            font-size: clamp(13px, 3.5vw, 15px);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 1.5px;
+            font-family: inherit;
+            text-align: center;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .menu-btn:active {
+            transform: scale(0.96);
+            background: rgba(255, 100, 200, 0.15);
+        }
+        .menu-btn.primary {
+            background: rgba(255, 50, 150, 0.2);
+            border-color: #ff6b9d;
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+        .menu-btn.primary:active {
+            background: rgba(255, 50, 150, 0.35);
+        }
+        .menu-btn.social {
+            background: rgba(100, 200, 255, 0.04);
+            border-color: rgba(100, 200, 255, 0.1);
+            color: rgba(200, 230, 255, 0.6);
+            font-size: clamp(11px, 2.8vw, 13px);
+        }
+        .menu-divider {
+            color: rgba(255, 200, 220, 0.08);
+            margin: 10px 0;
+            font-size: 11px;
+            letter-spacing: 5px;
+        }
+        .menu-version {
+            margin-top: 10px;
+            font-size: clamp(9px, 2vw, 10px);
+            color: rgba(255, 200, 220, 0.15);
+            letter-spacing: 1px;
+        }
+
+        /* پنجره تنظیمات */
+        #settingsModal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+        }
+        #settingsModal.show {
+            display: flex;
+        }
+        .settings-container {
+            background: rgba(20, 5, 35, 0.95);
+            padding: 25px 20px;
+            border-radius: 24px;
+            border: 2px solid rgba(255, 100, 200, 0.15);
+            max-width: 400px;
+            width: 100%;
+            text-align: left;
+        }
+        .settings-container h2 {
+            color: #ffb3d9;
+            font-weight: 300;
+            margin-bottom: 16px;
+            text-align: center;
+            letter-spacing: 2px;
+            font-size: clamp(18px, 4.5vw, 24px);
+        }
+        .settings-group {
+            margin: 12px 0;
+        }
+        .settings-group label {
+            color: rgba(255, 200, 220, 0.5);
+            font-size: clamp(11px, 2.8vw, 13px);
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .settings-group input[type="range"] {
+            width: 100%;
+            height: 3px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 100, 200, 0.15);
+            border-radius: 2px;
+            outline: none;
+        }
+        .settings-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff6b9d;
+            cursor: pointer;
+            border: 2px solid rgba(255, 100, 200, 0.2);
+            box-shadow: 0 0 15px rgba(255, 50, 150, 0.15);
+        }
+        .settings-group input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff6b9d;
+            cursor: pointer;
+            border: 2px solid rgba(255, 100, 200, 0.2);
+        }
+        .settings-value {
+            color: #ffb3d9;
+            font-size: clamp(11px, 2.8vw, 13px);
+            float: right;
+            font-weight: 600;
+        }
+        .settings-close-btn {
+            display: block;
+            width: 100%;
+            padding: 11px;
+            margin-top: 16px;
+            background: rgba(255, 100, 200, 0.08);
+            border: 1px solid rgba(255, 100, 200, 0.15);
+            border-radius: 50px;
+            color: #ffb3d9;
+            font-size: clamp(12px, 3vw, 14px);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            letter-spacing: 2px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .settings-close-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 200, 220, 0.3);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px 12px;
+            border-radius: 16px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            font-size: clamp(8px, 2vw, 10px);
+            z-index: 100;
+            pointer-events: none;
+            letter-spacing: 0.5px;
+            text-align: center;
+            display: none;
+            white-space: nowrap;
+        }
+        #hud.show {
+            display: block;
+        }
+        #hud kbd {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 1px 6px;
+            border-radius: 6px;
+            margin: 0 1px;
+            color: #ffb3d9;
+            border: 1px solid rgba(255, 150, 200, 0.08);
+            font-size: clamp(7px, 1.8vw, 9px);
+        }
+        #healthBar {
+            position: absolute;
+            bottom: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(160px, 40vw);
+            height: 3px;
+            background: rgba(255, 0, 50, 0.12);
+            border-radius: 3px;
+            z-index: 100;
+            display: none;
+            overflow: hidden;
+            border: 1px solid rgba(255, 0, 50, 0.06);
+        }
+        #healthBar.show {
+            display: block;
+        }
+        #healthFill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff0044, #ff4488);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        #scoreDisplay {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            color: rgba(255, 200, 220, 0.5);
+            font-size: clamp(14px, 3.5vw, 17px);
+            z-index: 100;
+            display: none;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 4px 12px;
+            border-radius: 10px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            letter-spacing: 0.5px;
+        }
+        #scoreDisplay.show {
+            display: block;
+        }
+        #scoreDisplay span {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+
+        /* صفحه Game Over */
+        #deathScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 0, 10, 0.92);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+        }
+        #deathScreen.show {
+            display: flex;
+        }
+        #deathScreen .content {
+            text-align: center;
+            color: #ff6b9d;
+            padding: 25px 20px;
+            background: rgba(20, 5, 35, 0.85);
+            border-radius: 24px;
+            border: 2px solid rgba(255, 50, 100, 0.15);
+            max-width: 400px;
+            width: 100%;
+        }
+        #deathScreen .content h1 {
+            font-size: clamp(28px, 8vw, 40px);
+            font-weight: 300;
+            text-shadow: 0 0 40px rgba(255, 50, 100, 0.2);
+            margin-bottom: 6px;
+        }
+        #deathScreen .content .sub {
+            color: rgba(255, 200, 220, 0.35);
+            font-size: clamp(11px, 2.8vw, 13px);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        #deathScreen .content .stats {
+            color: rgba(255, 200, 220, 0.4);
+            font-size: clamp(13px, 3.5vw, 15px);
+            margin: 10px 0;
+            letter-spacing: 0.5px;
+        }
+        #deathScreen .content .stats span {
+            color: #ff7eb3;
+            font-weight: 600;
+        }
+        #deathScreen .content .menu-btn {
+            display: inline-block;
+            width: auto;
+            padding: 10px 25px;
+            margin: 4px;
+            font-size: clamp(12px, 3vw, 13px);
+        }
+
+        .vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            background: radial-gradient(ellipse at center, transparent 45%, rgba(5, 0, 10, 0.6) 100%);
+        }
+        .grain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 40;
+            opacity: 0.02;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" stitchTiles="stitch"/></filter><rect width="200" height="200" filter="url(%23n)" opacity="0.4"/></svg>');
+            background-repeat: repeat;
+            background-size: 200px 200px;
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 60;
+            display: none;
+            pointer-events: none;
+        }
+        #crosshair.show {
+            display: block;
+        }
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 200, 220, 0.25);
+        }
+        #crosshair::before {
+            width: 16px;
+            height: 1px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #crosshair::after {
+            width: 1px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #crosshair .dot {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 100, 200, 0.4);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* کنترل‌های موبایل - بهینه برای ایتا */
+        #mobileControls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 80;
+            display: none;
+            pointer-events: none;
+            touch-action: none;
+        }
+        #mobileControls.show {
+            display: block;
+        }
+
+        #joystickArea {
+            position: absolute;
+            bottom: 30px;
+            left: 25px;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: rgba(255, 100, 200, 0.06);
+            border: 1.5px solid rgba(255, 100, 200, 0.12);
+            pointer-events: auto;
+            touch-action: none;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        #joystickKnob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 100, 200, 0.25), rgba(255, 100, 200, 0.08));
+            border: 1.5px solid rgba(255, 100, 200, 0.2);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: none;
+            touch-action: none;
+        }
+        #joystickKnob::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(255, 100, 200, 0.15);
+            transform: translate(-50%, -50%);
+        }
+
+        #fireBtn {
+            position: absolute;
+            bottom: 40px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 50, 100, 0.25), rgba(255, 50, 100, 0.08));
+            border: 2px solid rgba(255, 50, 100, 0.3);
+            color: rgba(255, 200, 220, 0.4);
+            font-size: 20px;
+            pointer-events: auto;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            font-family: inherit;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #fireBtn:active {
+            transform: scale(0.90);
+            background: radial-gradient(circle, rgba(255, 50, 100, 0.4), rgba(255, 50, 100, 0.15));
+        }
+
+        #lookArea {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 70%;
+            height: 100%;
+            pointer-events: auto;
+            touch-action: none;
+            background: transparent;
+        }
+
+        #mobileInfo {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 200, 220, 0.15);
+            font-size: clamp(8px, 2vw, 10px);
+            z-index: 90;
+            display: none;
+            letter-spacing: 1.5px;
+            text-align: center;
+            pointer-events: none;
+        }
+        #mobileInfo.show {
+            display: block;
+        }
+
+        /* تنظیمات ویژه ایتا */
+        .ita-status-bar {
+            height: env(safe-area-inset-top, 0px);
+            background: transparent;
+        }
+
+        @media (pointer: coarse) {
+            #hud kbd {
+                display: none;
+            }
+            #hud::after {
+                content: '🎮 جوی‌استیک · 🔫 شلیک';
+                font-size: clamp(8px, 1.8vw, 10px);
+            }
+        }
+
+        /* برای صفحه‌های بسیار کوچک */
+        @media (max-width: 400px) {
+            #joystickArea {
+                width: 80px;
+                height: 80px;
+                bottom: 20px;
+                left: 15px;
+            }
+            #joystickKnob {
+                width: 32px;
+                height: 32px;
+            }
+            #joystickKnob::after {
+                width: 12px;
+                height: 12px;
+            }
+            #fireBtn {
+                width: 48px;
+                height: 48px;
+                bottom: 28px;
+                right: 15px;
+                font-size: 16px;
+            }
+            .menu-container {
+                padding: 20px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- منوی اصلی -->
+    <div id="mainMenu">
+        <div class="menu-container">
+            <div class="menu-title">🧪 <span>The Professor's</span> Victoria</div>
+            <div class="menu-subtitle">▸ آزمایش ویکتوریایی</div>
+
+            <button class="menu-btn primary" id="startBtn">▶ START</button>
+            <button class="menu-btn" id="settingsBtn">⚙ SETTINGS</button>
+            <div class="menu-divider">— — —</div>
+            <button class="menu-btn social" id="socialBtn">📱 aparat.com/drtaha</button>
+            <div class="menu-version">گرافیک بالا · تجربه ترسناک</div>
+        </div>
+    </div>
+
+    <!-- پنجره تنظیمات -->
+    <div id="settingsModal">
+        <div class="settings-container">
+            <h2>⚙ تنظیمات</h2>
+            <div class="settings-group">
+                <label>FOV (میدان دید) <span class="settings-value" id="fovValue">70</span></label>
+                <input type="range" id="fovSlider" min="50" max="100" value="70" step="1">
+            </div>
+            <div class="settings-group">
+                <label>حساسیت <span class="settings-value" id="sensitivityValue">1.0</span></label>
+                <input type="range" id="sensitivitySlider" min="0.1" max="2.0" value="1.0" step="0.1">
+            </div>
+            <button class="settings-close-btn" id="settingsCloseBtn">✓ اعمال و بستن</button>
+        </div>
+    </div>
+
+    <!-- صفحه Game Over -->
+    <div id="deathScreen">
+        <div class="content">
+            <h1>☠️ YOU DIED</h1>
+            <div class="sub">پرفسور ویکتوریا شما را پیدا کرد...</div>
+            <div class="stats">💀 زامبی‌های کشته شده: <span id="deathKills">0</span></div>
+            <div style="display:flex; flex-direction:column; gap:6px; margin-top:16px;">
+                <button class="menu-btn primary" id="respawnBtn">↻ تلاش مجدد</button>
+                <button class="menu-btn secondary" id="menuBtn">🏠 منوی اصلی</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> حرکت · <kbd>🖱</kbd> چرخش · <kbd>🖱 چپ</kbd> شلیک
+    </div>
+    <div id="healthBar"><div id="healthFill"></div></div>
+    <div id="scoreDisplay">💀 <span id="killCount">0</span></div>
+
+    <div id="crosshair"><div class="dot"></div></div>
+
+    <!-- کنترل‌های موبایل -->
+    <div id="mobileControls">
+        <div id="lookArea"></div>
+        <div id="joystickArea">
+            <div id="joystickKnob"></div>
+        </div>
+        <div id="fireBtn">🔫</div>
+        <div id="mobileInfo">👆 سمت راست برای چرخش</div>
+    </div>
+
+    <div class="vignette"></div>
+    <div class="grain"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- تشخیص دستگاه (بهینه برای ایتا) ---
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            ('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (window.innerWidth < 1024);
+
+        // تشخیص ایتا
+        const isEita = navigator.userAgent.includes('Eita') || window.location.href.includes('eita');
+
+        console.log('📱 دستگاه:', isMobile ? 'موبایل' : 'کامپیوتر');
+        console.log('📱 ایتا:', isEita);
+
+        // --- عناصر DOM ---
+        const mainMenu = document.getElementById('mainMenu');
+        const startBtn = document.getElementById('startBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const socialBtn = document.getElementById('socialBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+        const fovSlider = document.getElementById('fovSlider');
+        const fovValue = document.getElementById('fovValue');
+        const sensitivitySlider = document.getElementById('sensitivitySlider');
+        const sensitivityValue = document.getElementById('sensitivityValue');
+        const deathScreen = document.getElementById('deathScreen');
+        const respawnBtn = document.getElementById('respawnBtn');
+        const menuBtn = document.getElementById('menuBtn');
+        const healthFill = document.getElementById('healthFill');
+        const killCountEl = document.getElementById('killCount');
+        const deathKillsEl = document.getElementById('deathKills');
+        const crosshair = document.getElementById('crosshair');
+        const hud = document.getElementById('hud');
+        const healthBar = document.getElementById('healthBar');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const mobileControls = document.getElementById('mobileControls');
+        const joystickArea = document.getElementById('joystickArea');
+        const joystickKnob = document.getElementById('joystickKnob');
+        const fireBtn = document.getElementById('fireBtn');
+        const lookArea = document.getElementById('lookArea');
+        const mobileInfo = document.getElementById('mobileInfo');
+
+        // --- نمایش کنترل‌های مناسب ---
+        if (isMobile) {
+            mobileControls.classList.add('show');
+            mobileInfo.classList.add('show');
+            document.querySelector('#hud kbd')?.remove();
+        }
+
+        // --- متغیرهای بازی ---
+        let gameRunning = false;
+        let health = 100;
+        let kills = 0;
+        let enemies = [];
+        let bullets = [];
+        let shootCooldown = 0;
+        let mouseSensitivity = 1.0;
+        const ENEMY_SPEED = 0.04;
+        const BULLET_SPEED = 0.5;
+        const ATTACK_RANGE = 2.5;
+
+        // --- متغیرهای جوی‌استیک ---
+        let joystickActive = false;
+        let joystickX = 0;
+        let joystickY = 0;
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        let isTouchingLook = false;
+
+        // --- Three.js راه‌اندازی ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0015);
+        scene.fog = new THREE.FogExp2(0x0a0015, 0.025);
+
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 50);
+        camera.position.set(0, 1.6, 0);
+
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            powerPreference: "high-performance"
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.9;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.body.prepend(renderer.domElement);
+
+        // --- تنظیمات FOV ---
+        fovSlider.addEventListener('input', () => {
+            const val = parseInt(fovSlider.value);
+            fovValue.textContent = val;
+            camera.fov = val;
+            camera.updateProjectionMatrix();
+        });
+
+        sensitivitySlider.addEventListener('input', () => {
+            const val = parseFloat(sensitivitySlider.value);
+            sensitivityValue.textContent = val.toFixed(1);
+            mouseSensitivity = val;
+        });
+
+        // --- نورپردازی ---
+        const ambient = new THREE.AmbientLight(0x443355, 0.3);
+        scene.add(ambient);
+
+        const mainLight = new THREE.DirectionalLight(0x8888ff, 0.5);
+        mainLight.position.set(-3, 10, 5);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        mainLight.shadow.camera.near = 0.5;
+        mainLight.shadow.camera.far = 30;
+        mainLight.shadow.camera.left = -15;
+        mainLight.shadow.camera.right = 15;
+        mainLight.shadow.camera.top = 15;
+        mainLight.shadow.camera.bottom = -15;
+        scene.add(mainLight);
+
+        const emergencyLight = new THREE.PointLight(0xff2244, 0.4, 15);
+        emergencyLight.position.set(0, 3, 0);
+        scene.add(emergencyLight);
+
+        const emergencyLight2 = new THREE.PointLight(0xff4422, 0.3, 12);
+        emergencyLight2.position.set(-4, 2, 3);
+        scene.add(emergencyLight2);
+
+        for (let i = 0; i < 8; i++) {
+            const light = new THREE.PointLight(0x4466ff, 0.15, 8);
+            light.position.set(
+                (Math.random() - 0.5) * 20,
+                3.5,
+                (Math.random() - 0.5) * 20
+            );
+            scene.add(light);
+        }
+
+        // --- ساخت بیمارستان (ساده‌تر برای عملکرد بهتر در ایتا) ---
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x1a1122,
+            roughness: 0.9,
+            metalness: 0.0,
+        });
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -0.05;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const wallMat = new THREE.MeshStandardMaterial({
+            color: 0x2a1a2a,
+            roughness: 0.8,
+            metalness: 0.0,
+        });
+        const wallMatLight = new THREE.MeshStandardMaterial({
+            color: 0x3a2a3a,
+            roughness: 0.7,
+            metalness: 0.0,
+        });
+
+        const wallData = [
+            { x: 0, z: -14, w: 30, h: 4, d: 0.3 },
+            { x: 0, z: 14, w: 30, h: 4, d: 0.3 },
+            { x: -14, z: 0, w: 0.3, h: 4, d: 30 },
+            { x: 14, z: 0, w: 0.3, h: 4, d: 30 },
+        ];
+        wallData.forEach(w => {
+            const wall = new THREE.Mesh(new THREE.BoxGeometry(w.w, w.h, w.d), wallMat);
+            wall.position.set(w.x, w.h / 2, w.z);
+            wall.castShadow = true;
+            wall.receiveShadow = true;
+            scene.add(wall);
+        });
+
+        const roomWalls = [
+            { x: -6, z: -8, w: 0.2, h: 3.5, d: 6 },
+            { x: 6, z: -8, w: 0.2, h: 3.5, d: 6 },
+            { x: -6, z: 8, w: 0.2, h: 3.5, d: 6 },
+            { x: 6, z: 8, w: 0.2, h: 3.5, d: 6 },
+            { x: 0, z: -5, w: 8, h: 3.5, d: 0.2 },
+            { x: 0, z: 5, w: 8, h: 3.5, d: 0.2 },
+        ];
+        roomWalls.forEach(w => {
+            const wall = new THREE.Mesh(new THREE.BoxGeometry(w.w, w.h, w.d), wallMatLight);
+            wall.position.set(w.x, w.h / 2, w.z);
+            wall.castShadow = true;
+            wall.receiveShadow = true;
+            scene.add(wall);
+        });
+
+        // تخت‌ها (کمتر برای عملکرد بهتر)
+        const bedMat = new THREE.MeshStandardMaterial({
+            color: 0x2a2a3a,
+            roughness: 0.8,
+            metalness: 0.1,
+        });
+        const bedMatMattress = new THREE.MeshStandardMaterial({
+            color: 0x3a2a3a,
+            roughness: 0.9,
+            metalness: 0.0,
+        });
+        const bedPos = [
+            [-3, -7],
+            [3, -7]
+        ];
+        bedPos.forEach(pos => {
+            const bed = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.2, 0.8), bedMat);
+            bed.position.set(pos[0], 0.15, pos[1]);
+            bed.castShadow = true;
+            bed.receiveShadow = true;
+            scene.add(bed);
+            const mattress = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 0.6), bedMatMattress);
+            mattress.position.set(pos[0], 0.3, pos[1]);
+            mattress.castShadow = true;
+            mattress.receiveShadow = true;
+            scene.add(mattress);
+        });
+
+        // --- مجسمه پرفسور ویکتوریا (ساده‌تر) ---
+        const professorGroup = new THREE.Group();
+
+        const pBodyMat = new THREE.MeshStandardMaterial({
+            color: 0x3a1a2e,
+            roughness: 0.5,
+            metalness: 0.2,
+            emissive: 0x1a0a1a,
+            emissiveIntensity: 0.1,
+        });
+        const pBody = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.0, 1.8, 8), pBodyMat);
+        pBody.position.y = 0.9;
+        pBody.castShadow = true;
+        professorGroup.add(pBody);
+
+        const pHeadMat = new THREE.MeshStandardMaterial({
+            color: 0xffccdd,
+            roughness: 0.3,
+            metalness: 0.0,
+        });
+        const pHead = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), pHeadMat);
+        pHead.position.y = 1.9;
+        pHead.castShadow = true;
+        professorGroup.add(pHead);
+
+        const pEyeMat = new THREE.MeshStandardMaterial({
+            color: 0xff0044,
+            emissive: 0xff0044,
+            emissiveIntensity: 2.0,
+        });
+        [
+            [-0.18, 1.95, 0.45],
+            [0.18, 1.95, 0.45]
+        ].forEach(pos => {
+            const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6), pEyeMat);
+            eye.position.set(pos[0], pos[1], pos[2]);
+            professorGroup.add(eye);
+        });
+
+        const pHatMat = new THREE.MeshStandardMaterial({
+            color: 0x1a0a1a,
+            roughness: 0.8,
+        });
+        const pHat = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 0.25, 8), pHatMat);
+        pHat.position.y = 2.25;
+        professorGroup.add(pHat);
+        const pHatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 0.4, 8), pHatMat);
+        pHatTop.position.y = 2.55;
+        professorGroup.add(pHatTop);
+
+        const pCapeMat = new THREE.MeshStandardMaterial({
+            color: 0x4a1a3a,
+            roughness: 0.9,
+            metalness: 0.0,
+            transparent: true,
+            opacity: 0.6,
+        });
+        const pCape = new THREE.Mesh(new THREE.ConeGeometry(1.0, 1.2, 6), pCapeMat);
+        pCape.position.set(0, 0.7, -0.7);
+        pCape.rotation.x = 0.3;
+        pCape.castShadow = true;
+        professorGroup.add(pCape);
+
+        professorGroup.position.set(0, 0, -8);
+        scene.add(professorGroup);
+
+        // --- ایجاد زامبی (ساده‌تر) ---
+        function createEnemy(pos) {
+            const group = new THREE.Group();
+
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: 0x2a1a2a,
+                roughness: 0.9,
+                metalness: 0.0,
+                emissive: 0x1a0a0a,
+                emissiveIntensity: 0.05,
+            });
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 0.8, 6), bodyMat);
+            body.position.y = 0.4;
+            body.castShadow = true;
+            group.add(body);
+
+            const headMat = new THREE.MeshStandardMaterial({
+                color: 0x3a2a2a,
+                roughness: 0.8,
+                metalness: 0.0,
+                emissive: 0x2a0a0a,
+                emissiveIntensity: 0.05,
+            });
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), headMat);
+            head.position.y = 0.85;
+            head.castShadow = true;
+            group.add(head);
+
+            const zEyeMat = new THREE.MeshStandardMaterial({
+                color: 0xff2244,
+                emissive: 0xff0044,
+                emissiveIntensity: 0.5,
+            });
+            [
+                [-0.08, 0.88, 0.22],
+                [0.08, 0.88, 0.22]
+            ].forEach(p => {
+                const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), zEyeMat);
+                eye.position.set(p[0], p[1], p[2]);
+                group.add(eye);
+            });
+
+            const armMat = new THREE.MeshStandardMaterial({
+                color: 0x2a1a1a,
+                roughness: 0.9,
+            });
+            for (let side = -1; side <= 1; side += 2) {
+                const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 4), armMat);
+                arm.position.set(side * 0.3, 0.5, 0);
+                arm.rotation.z = side * 0.5;
+                arm.rotation.x = 0.3;
+                arm.castShadow = true;
+                group.add(arm);
+            }
+
+            group.position.set(pos.x, 0, pos.z);
+            group.userData = {
+                health: 30,
+                speed: ENEMY_SPEED + Math.random() * 0.02,
+                attackCooldown: 0,
+            };
+            scene.add(group);
+            enemies.push(group);
+            return group;
+        }
+
+        function spawnEnemies() {
+            const positions = [];
+            const count = isMobile ? 10 : 15;
+            for (let i = 0; i < count; i++) {
+                let x, z, valid;
+                let attempts = 0;
+                do {
+                    x = (Math.random() - 0.5) * 24;
+                    z = (Math.random() - 0.5) * 24;
+                    valid = Math.abs(x) > 2 || Math.abs(z) > 2;
+                    valid = valid && Math.abs(x) < 13 && Math.abs(z) < 13;
+                    attempts++;
+                } while (!valid && attempts < 50);
+                positions.push({ x, z });
+            }
+            positions.forEach(pos => createEnemy(pos));
+        }
+
+        // --- گلوله ---
+        function shootBullet() {
+            if (shootCooldown > 0) return;
+            shootCooldown = isMobile ? 15 : 10;
+
+            const bulletMat = new THREE.MeshStandardMaterial({
+                color: 0xff4488,
+                emissive: 0xff0044,
+                emissiveIntensity: 1.0,
+            });
+            const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), bulletMat);
+            bullet.position.copy(camera.position);
+            bullet.position.y += 0.1;
+
+            const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            bullet.userData.velocity = direction.multiplyScalar(BULLET_SPEED);
+            bullet.userData.life = 200;
+
+            scene.add(bullet);
+            bullets.push(bullet);
+
+            const flash = document.createElement('div');
+            flash.style.cssText =
+                'position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center, rgba(255,50,100,0.08), transparent 70%);pointer-events:none;z-index:30;';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 50);
+        }
+
+        // --- کنترل‌ها ---
+        let isLocked = false;
+        const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+        const PI_2 = Math.PI / 2;
+
+        // کنترل‌های کامپیوتر
+        if (!isMobile) {
+            renderer.domElement.addEventListener('click', () => {
+                if (gameRunning) {
+                    renderer.domElement.requestPointerLock();
+                    shootBullet();
+                }
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                isLocked = document.pointerLockElement === renderer.domElement;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isLocked || !gameRunning) return;
+                const mx = e.movementX || 0;
+                const my = e.movementY || 0;
+                euler.setFromQuaternion(camera.quaternion);
+                euler.y -= mx * 0.002 * mouseSensitivity;
+                euler.x -= my * 0.002 * mouseSensitivity;
+                euler.x = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, euler.x));
+                camera.quaternion.setFromEuler(euler);
+            });
+
+            document.addEventListener('mousedown', (e) => {
+                if (e.button === 0 && gameRunning && isLocked) {
+                    shootBullet();
+                }
+            });
+
+            const keys = { w: false, a: false, s: false, d: false };
+            document.addEventListener('keydown', (e) => {
+                const key = e.key.toLowerCase();
+                if (key in keys) {
+                    keys[key] = true;
+                    e.preventDefault();
+                }
+            });
+            document.addEventListener('keyup', (e) => {
+                const key = e.key.toLowerCase();
+                if (key in keys) {
+                    keys[key] = false;
+                    e.preventDefault();
+                }
+            });
+            window._keys = keys;
+        }
+
+        // --- کنترل‌های لمسی (موبایل/ایتا) ---
+        let joystickTouchId = null;
+
+        joystickArea.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            joystickTouchId = touch.identifier;
+            joystickActive = true;
+            updateJoystick(touch);
+        }, { passive: false });
+
+        joystickArea.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            for (const touch of e.changedTouches) {
+                if (touch.identifier === joystickTouchId) {
+                    updateJoystick(touch);
+                }
+            }
+        }, { passive: false });
+
+        joystickArea.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            for (const touch of e.changedTouches) {
+                if (touch.identifier === joystickTouchId) {
+                    joystickActive = false;
+                    joystickX = 0;
+                    joystickY = 0;
+                    joystickKnob.style.transform = 'translate(-50%, -50%)';
+                    joystickTouchId = null;
+                }
+            }
+        }, { passive: false });
+
+        joystickArea.addEventListener('touchcancel', () => {
+            joystickActive = false;
+            joystickX = 0;
+            joystickY = 0;
+            joystickKnob.style.transform = 'translate(-50%, -50%)';
+            joystickTouchId = null;
+        });
+
+        function updateJoystick(touch) {
+            const rect = joystickArea.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const maxDist = rect.width / 2 - 15;
+
+            let dx = touch.clientX - centerX;
+            let dy = touch.clientY - centerY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > maxDist) {
+                dx = dx / dist * maxDist;
+                dy = dy / dist * maxDist;
+            }
+
+            joystickX = dx / maxDist;
+            joystickY = dy / maxDist;
+
+            joystickKnob.style.transform = `translate(${-50 + (dx / maxDist) * 50}%, ${-50 + (dy / maxDist) * 50}%)`;
+        }
+
+        // ناحیه چرخش
+        lookArea.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
+            isTouchingLook = true;
+        }, { passive: false });
+
+        lookArea.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!isTouchingLook || !gameRunning) return;
+            for (const touch of e.changedTouches) {
+                const dx = touch.clientX - lastTouchX;
+                const dy = touch.clientY - lastTouchY;
+                lastTouchX = touch.clientX;
+                lastTouchY = touch.clientY;
+
+                euler.setFromQuaternion(camera.quaternion);
+                euler.y -= dx * 0.005 * mouseSensitivity;
+                euler.x -= dy * 0.005 * mouseSensitivity;
+                euler.x = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, euler.x));
+                camera.quaternion.setFromEuler(euler);
+            }
+        }, { passive: false });
+
+        lookArea.addEventListener('touchend', () => {
+            isTouchingLook = false;
+        });
+        lookArea.addEventListener('touchcancel', () => {
+            isTouchingLook = false;
+        });
+
+        // دکمه شلیک
+        fireBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameRunning) {
+                shootBullet();
+                fireBtn.style.transform = 'scale(0.90)';
+            }
+        }, { passive: false });
+
+        fireBtn.addEventListener('touchend', () => {
+            fireBtn.style.transform = 'scale(1)';
+        });
+        fireBtn.addEventListener('touchcancel', () => {
+            fireBtn.style.transform = 'scale(1)';
+        });
+
+        // --- دکمه‌های منو ---
+        startBtn.addEventListener('click', startGame);
+        startBtn.addEventListener('touchend', (e) => { e.preventDefault();
+            startGame(); });
+
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('show');
+        });
+        settingsBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            settingsModal.classList.add('show');
+        });
+
+        settingsCloseBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('show');
+        });
+        settingsCloseBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            settingsModal.classList.remove('show');
+        });
+
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.remove('show');
+            }
+        });
+
+        socialBtn.addEventListener('click', () => {
+            // در ایتا با window.open یا location.href
+            window.open('https://aparat.com/drtaha', '_blank');
+        });
+        socialBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            window.open('https://aparat.com/drtaha', '_blank');
+        });
+
+        respawnBtn.addEventListener('click', () => {
+            deathScreen.classList.remove('show');
+            startGame();
+        });
+        respawnBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            deathScreen.classList.remove('show');
+            startGame();
+        });
+
+        menuBtn.addEventListener('click', () => {
+            deathScreen.classList.remove('show');
+            mainMenu.classList.remove('hidden');
+            gameRunning = false;
+            if (document.pointerLockElement) {
+                document.exitPointerLock();
+            }
+            crosshair.classList.remove('show');
+            hud.classList.remove('show');
+            healthBar.classList.remove('show');
+            scoreDisplay.classList.remove('show');
+            if (isMobile) {
+                mobileControls.classList.remove('show');
+                mobileInfo.classList.remove('show');
+            }
+            enemies.forEach(enemy => scene.remove(enemy));
+            enemies = [];
+            bullets.forEach(b => scene.remove(b));
+            bullets = [];
+        });
+        menuBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            menuBtn.click();
+        });
+
+        // --- شروع بازی ---
+        function startGame() {
+            enemies.forEach(enemy => scene.remove(enemy));
+            enemies = [];
+            bullets.forEach(b => scene.remove(b));
+            bullets = [];
+            kills = 0;
+            health = 100;
+            killCountEl.textContent = '0';
+            deathKillsEl.textContent = '0';
+            healthFill.style.width = '100%';
+            gameRunning = true;
+
+            mainMenu.classList.add('hidden');
+            deathScreen.classList.remove('show');
+            crosshair.classList.add('show');
+            hud.classList.add('show');
+            healthBar.classList.add('show');
+            scoreDisplay.classList.add('show');
+
+            if (isMobile) {
+                mobileControls.classList.add('show');
+                mobileInfo.classList.add('show');
+            }
+
+            camera.position.set(0, 1.6, 3);
+            camera.quaternion.identity();
+
+            spawnEnemies();
+
+            if (!isMobile) {
+                setTimeout(() => {
+                    renderer.domElement.requestPointerLock();
+                }, 300);
+            }
+        }
+
+        // --- به‌روزرسانی بازی ---
+        function updateGame() {
+            if (!gameRunning) return;
+
+            if (shootCooldown > 0) shootCooldown--;
+
+            // حرکت WASD (کامپیوتر)
+            if (!isMobile && window._keys) {
+                const speed = 0.08;
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                forward.y = 0;
+                forward.normalize();
+                const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+                right.y = 0;
+                right.normalize();
+
+                const move = new THREE.Vector3(0, 0, 0);
+                if (window._keys.w) move.add(forward);
+                if (window._keys.s) move.add(forward.clone().multiplyScalar(-1));
+                if (window._keys.a) move.add(right.clone().multiplyScalar(-1));
+                if (window._keys.d) move.add(right);
+                if (move.length() > 0) {
+                    move.normalize().multiplyScalar(speed);
+                    camera.position.add(move);
+                    camera.position.x = Math.max(-13, Math.min(13, camera.position.x));
+                    camera.position.z = Math.max(-13, Math.min(13, camera.position.z));
+                }
+            }
+
+            // حرکت جوی‌استیک (موبایل)
+            if (isMobile && joystickActive) {
+                const speed = 0.08;
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                forward.y = 0;
+                forward.normalize();
+                const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+                right.y = 0;
+                right.normalize();
+
+                const move = new THREE.Vector3(0, 0, 0);
+                if (Math.abs(joystickY) > 0.1) {
+                    move.add(forward.clone().multiplyScalar(-joystickY));
+                }
+                if (Math.abs(joystickX) > 0.1) {
+                    move.add(right.clone().multiplyScalar(joystickX));
+                }
+                if (move.length() > 0) {
+                    move.normalize().multiplyScalar(speed * Math.min(1, move.length()));
+                    camera.position.add(move);
+                    camera.position.x = Math.max(-13, Math.min(13, camera.position.x));
+                    camera.position.z = Math.max(-13, Math.min(13, camera.position.z));
+                }
+            }
+
+            // به‌روزرسانی گلوله‌ها
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.position.add(b.userData.velocity);
+                b.userData.life--;
+                if (b.userData.life <= 0 ||
+                    Math.abs(b.position.x) > 15 ||
+                    Math.abs(b.position.z) > 15) {
+                    scene.remove(b);
+                    bullets.splice(i, 1);
+                    continue;
+                }
+                let hit = false;
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    const enemy = enemies[j];
+                    const dist = b.position.distanceTo(enemy.position);
+                    if (dist < 1.0) {
+                        enemy.userData.health -= 15;
+                        if (enemy.userData.health <= 0) {
+                            scene.remove(enemy);
+                            enemies.splice(j, 1);
+                            kills++;
+                            killCountEl.textContent = kills;
+                            if (Math.random() < 0.15) {
+                                const pos = {
+                                    x: (Math.random() - 0.5) * 20,
+                                    z: (Math.random() - 0.5) * 20
+                                };
+                                createEnemy(pos);
+                            }
+                        }
+                        hit = true;
+                        break;
+                    }
+                }
+                if (hit) {
+                    scene.remove(b);
+                    bullets.splice(i, 1);
+                }
+            }
+
+            // حرکت زامبی‌ها
+            for (const enemy of enemies) {
+                const dir = new THREE.Vector3()
+                    .copy(camera.position)
+                    .sub(enemy.position);
+                dir.y = 0;
+                const dist = dir.length();
+                if (dist > 0.5 && dist < 20) {
+                    dir.normalize().multiplyScalar(enemy.userData.speed);
+                    enemy.position.add(dir);
+                }
+
+                if (dist < ATTACK_RANGE) {
+                    enemy.userData.attackCooldown--;
+                    if (enemy.userData.attackCooldown <= 0) {
+                        health -= isMobile ? 3 : 5;
+                        healthFill.style.width = Math.max(0, health) + '%';
+                        enemy.userData.attackCooldown = 30;
+                        const flash = document.createElement('div');
+                        flash.style.cssText =
+                            'position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center, rgba(255,0,0,0.12), transparent 70%);pointer-events:none;z-index:30;';
+                        document.body.appendChild(flash);
+                        setTimeout(() => flash.remove(), 100);
+
+                        if (health <= 0) {
+                            gameOver();
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // اسپاون زامبی جدید
+            const maxEnemies = isMobile ? 6 : 10;
+            if (enemies.length < maxEnemies && Math.random() < 0.003) {
+                const pos = {
+                    x: (Math.random() - 0.5) * 22,
+                    z: (Math.random() - 0.5) * 22
+                };
+                if (Math.abs(pos.x) > 2 || Math.abs(pos.z) > 2) {
+                    createEnemy(pos);
+                }
+            }
+
+            // حرکت پرفسور
+            const profDir = new THREE.Vector3()
+                .copy(camera.position)
+                .sub(professorGroup.position);
+            profDir.y = 0;
+            const profDist = profDir.length();
+            if (profDist > 3 && profDist < 20) {
+                profDir.normalize().multiplyScalar(0.02);
+                professorGroup.position.add(profDir);
+            }
+            professorGroup.lookAt(camera.position);
+            professorGroup.rotation.x = 0;
+            professorGroup.rotation.z = 0;
+
+            if (profDist < 2.5) {
+                gameOver();
+                return;
+            }
+
+            professorGroup.children.forEach(child => {
+                if (child.isMesh && child.material && child.material.emissiveIntensity === 2.0) {
+                    child.material.emissiveIntensity = 1.5 + Math.sin(Date.now() * 0.005 + child.position.x) * 0.8;
+                }
+            });
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            deathKillsEl.textContent = kills;
+            deathScreen.classList.add('show');
+            crosshair.classList.remove('show');
+            hud.classList.remove('show');
+            healthBar.classList.remove('show');
+            scoreDisplay.classList.remove('show');
+            if (isMobile) {
+                mobileControls.classList.remove('show');
+                mobileInfo.classList.remove('show');
+            }
+            if (document.pointerLockElement) {
+                document.exitPointerLock();
+            }
+        }
+
+        // --- حلقه انیمیشن ---
+        function animate() {
+            requestAnimationFrame(animate);
+            updateGame();
+
+            emergencyLight.intensity = 0.3 + Math.sin(Date.now() * 0.003) * 0.1;
+            emergencyLight2.intensity = 0.2 + Math.cos(Date.now() * 0.004) * 0.1;
+
+            renderer.render(scene, camera);
+        }
+
+        // --- مدیریت سایز ---
+        function handleResize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+
+            if (isMobile) {
+                const lookWidth = width * 0.7;
+                lookArea.style.width = lookWidth + 'px';
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(handleResize, 300);
+        });
+
+        // --- شروع ---
+        if (isMobile) {
+            const lookWidth = window.innerWidth * 0.7;
+            lookArea.style.width = lookWidth + 'px';
+        }
+
+        animate();
+        console.log('🎮 The Professor\'s Victoria - آماده است!');
+        console.log('📱 دستگاه:', isMobile ? 'موبایل' : 'کامپیوتر');
+        console.log('📱 ایتا:', isEita);
+        console.log('📺 aparat.com/drtaha');
+    </script>
+</body>
+</html>
